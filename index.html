@@ -1,391 +1,863 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Jogo da Cobrinha (Snake)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Moderno</title>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+:root{
+    --bg:#07111f;
+    --card:#0f1b2d;
+    --card2:#13233a;
+    --accent:#4ade80;
+    --accent2:#22c55e;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --danger:#ef4444;
+}
 
-    :root {
-        --bg: #0f172a;
-        --panel: #1e293b;
-        --accent: #22c55e;
-        --accent-dark: #16a34a;
-        --food: #ef4444;
-        --text: #f8fafc;
-        --grid: rgba(255,255,255,0.05);
-    }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-    body {
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        font-family: Arial, Helvetica, sans-serif;
-        color: var(--text);
-        padding: 20px;
-    }
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+    radial-gradient(circle at top,#16304f,#07111f 65%);
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    color:var(--text);
+    padding:20px;
+}
 
-    .container {
-        width: 100%;
-        max-width: 650px;
-        text-align: center;
-    }
+.container{
+    width:min(95vw,900px);
+}
 
-    h1 {
-        margin-bottom: 10px;
-        font-size: clamp(1.8rem, 4vw, 2.5rem);
-    }
+.panel{
+    background:rgba(15,27,45,.92);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(15px);
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
 
-    .score-board {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 15px;
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
 
-    .game-wrapper {
-        position: relative;
-        display: inline-block;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    }
+.title{
+    font-size:clamp(1.6rem,4vw,2.3rem);
+    font-weight:800;
+}
 
-    canvas {
-        display: block;
-        background-color: #111827;
-        max-width: 100%;
-        height: auto;
-    }
+.score-box{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
 
-    .overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,0.75);
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        padding: 20px;
-        text-align: center;
-    }
+.badge{
+    background:var(--card2);
+    border:1px solid rgba(255,255,255,.06);
+    padding:10px 14px;
+    border-radius:14px;
+    font-weight:700;
+}
 
-    .overlay.show {
-        display: flex;
-    }
+.controls{
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
 
-    .overlay h2 {
-        font-size: 2rem;
-        color: #fff;
-    }
+.info{
+    color:var(--muted);
+    font-size:.95rem;
+    line-height:1.5;
+}
 
-    .overlay p {
-        font-size: 1.1rem;
-    }
+button{
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#06220f;
+    font-weight:800;
+    padding:12px 18px;
+    border-radius:14px;
+    transition:.25s;
+}
 
-    button {
-        border: none;
-        background: var(--accent);
-        color: white;
-        padding: 12px 22px;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
+button:hover{
+    transform:translateY(-2px);
+}
 
-    button:hover {
-        background: var(--accent-dark);
-        transform: translateY(-2px);
-    }
+.game-wrapper{
+    position:relative;
+    display:flex;
+    justify-content:center;
+}
 
-    .instructions {
-        margin-top: 15px;
-        opacity: 0.9;
-        font-size: 0.95rem;
-    }
+canvas{
+    width:min(90vw,700px);
+    height:min(90vw,700px);
+    max-width:700px;
+    max-height:700px;
+    background:
+    linear-gradient(180deg,#091421,#0d1829);
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:inset 0 0 50px rgba(0,0,0,.35);
+}
 
-    @media (max-width: 600px) {
-        .score-board {
-            flex-direction: column;
-            gap: 8px;
-        }
+.overlay{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.72);
+    border-radius:20px;
+    padding:20px;
+}
+
+.overlay.show{
+    display:flex;
+}
+
+.modal{
+    text-align:center;
+    max-width:420px;
+}
+
+.modal h2{
+    font-size:2.2rem;
+    margin-bottom:10px;
+}
+
+.modal p{
+    margin:10px 0;
+    color:#dbeafe;
+}
+
+.modal .final-score{
+    font-size:1.4rem;
+    font-weight:800;
+    color:#4ade80;
+}
+
+.legend{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+
+.legend span{
+    background:var(--card2);
+    padding:8px 12px;
+    border-radius:12px;
+    font-size:.9rem;
+}
+
+.pause-indicator{
+    position:absolute;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.6);
+    padding:8px 16px;
+    border-radius:999px;
+    font-weight:700;
+    display:none;
+}
+
+.pause-indicator.show{
+    display:block;
+}
+
+@media(max-width:700px){
+    .controls{
+        flex-direction:column;
     }
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🐍 Jogo da Cobrinha</h1>
+    <div class="panel">
 
-    <div class="score-board">
-        <div>Pontuação: <span id="score">0</span></div>
-        <div>Recorde: <span id="highScore">0</span></div>
-    </div>
+        <div class="header">
+            <div class="title">🐍 Snake Moderno</div>
 
-    <div class="game-wrapper">
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-
-        <div class="overlay" id="gameOverScreen">
-            <h2>Game Over</h2>
-            <p>Sua pontuação: <span id="finalScore">0</span></p>
-            <button id="restartBtn">Jogar Novamente</button>
+            <div class="score-box">
+                <div class="badge">Pontos: <span id="score">0</span></div>
+                <div class="badge">Velocidade: <span id="speed">1.00x</span></div>
+            </div>
         </div>
-    </div>
 
-    <div class="instructions">
-        Use as teclas ↑ ↓ ← → para controlar a cobra.
+        <div class="controls">
+            <div class="info">
+                ⬅️⬆️➡️⬇️ ou WASD para mover<br>
+                ⏸️ ESPAÇO para pausar/continuar
+            </div>
+
+            <button id="pauseBtn">PAUSAR</button>
+        </div>
+
+        <div class="game-wrapper">
+
+            <div class="pause-indicator" id="pauseIndicator">
+                JOGO PAUSADO
+            </div>
+
+            <canvas id="game" width="700" height="700"></canvas>
+
+            <div class="overlay" id="gameOver">
+                <div class="modal">
+                    <h2>Game Over</h2>
+
+                    <p id="gameOverMessage"></p>
+
+                    <div class="final-score">
+                        Pontuação: <span id="finalScore">0</span>
+                    </div>
+
+                    <br>
+
+                    <button id="restartBtn">
+                        Jogar Novamente
+                    </button>
+
+                    <p style="margin-top:15px;">
+                        Pressione ENTER para reiniciar
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="legend">
+            <span>🍌 +1 ponto</span>
+            <span>🍎 +1 ponto</span>
+            <span>🍊 +2 pontos +2 segmentos</span>
+            <span>🍍 gera 💩</span>
+            <span>💩 mata instantaneamente</span>
+        </div>
+
     </div>
 </div>
 
 <script>
-/*
-=========================================================
-JOGO DA COBRINHA (SNAKE)
-- HTML, CSS e JavaScript puros
-- Sem dependências externas
-- Funciona localmente no navegador
-=========================================================
-*/
+/* ==========================================================
+   SNAKE MODERNO
+   Organização:
+   - Configuração
+   - Estado
+   - Entidades
+   - Física
+   - Renderização
+   - Controles
+========================================================== */
 
-// Canvas e contexto de desenho
-const canvas = document.getElementById("gameCanvas");
+const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Configurações do tabuleiro
-const GRID_SIZE = 20;
-const TILE_COUNT = canvas.width / GRID_SIZE;
+const scoreEl = document.getElementById("score");
+const speedEl = document.getElementById("speed");
+const pauseBtn = document.getElementById("pauseBtn");
+const pauseIndicator = document.getElementById("pauseIndicator");
 
-// Elementos da interface
-const scoreElement = document.getElementById("score");
-const highScoreElement = document.getElementById("highScore");
-const gameOverScreen = document.getElementById("gameOverScreen");
-const finalScoreElement = document.getElementById("finalScore");
+const gameOverEl = document.getElementById("gameOver");
+const finalScoreEl = document.getElementById("finalScore");
+const gameOverMessageEl = document.getElementById("gameOverMessage");
 const restartBtn = document.getElementById("restartBtn");
 
-// Estado do jogo
+const GRID = 25;
+const SIZE = canvas.width / GRID;
+
+const BASE_SPEED = 160;
+
+const FRUITS = [
+    {emoji:"🍌", type:"banana"},
+    {emoji:"🍎", type:"apple"},
+    {emoji:"🍍", type:"pineapple"},
+    {emoji:"🍊", type:"orange"}
+];
+
 let snake;
-let food;
 let direction;
 let nextDirection;
+let fruits;
+let poops;
 let score;
-let gameLoop;
-let gameSpeed = 120;
-let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
+let gameRunning;
+let paused;
+let gameOverReason;
+let growQueue;
+let currentSpeed;
+let lastTick;
+let animationFrame;
 
-highScoreElement.textContent = highScore;
+/* =========================
+   Inicialização
+========================= */
 
-/**
- * Inicializa ou reinicia o jogo
- */
-function initGame() {
+function startGame(){
+
     snake = [
-        { x: 10, y: 10 }
+        {x:12,y:12},
+        {x:11,y:12},
+        {x:10,y:12}
     ];
 
-    direction = { x: 1, y: 0 };
-    nextDirection = { x: 1, y: 0 };
+    direction = {x:1,y:0};
+    nextDirection = {x:1,y:0};
+
+    fruits = [];
+    poops = [];
 
     score = 0;
-    scoreElement.textContent = score;
+    growQueue = 0;
 
-    createFood();
+    gameRunning = true;
+    paused = false;
 
-    gameOverScreen.classList.remove("show");
+    currentSpeed = BASE_SPEED;
+    lastTick = 0;
 
-    clearInterval(gameLoop);
-    gameLoop = setInterval(updateGame, gameSpeed);
+    scoreEl.textContent = score;
+    speedEl.textContent = "1.00x";
+
+    gameOverEl.classList.remove("show");
+
+    ensureTwoFruits();
+
+    cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(loop);
 }
 
-/**
- * Gera alimento em posição aleatória
- * evitando que apareça sobre a cobra
- */
-function createFood() {
-    let validPosition = false;
+/* =========================
+   Utilidades
+========================= */
 
-    while (!validPosition) {
-        food = {
-            x: Math.floor(Math.random() * TILE_COUNT),
-            y: Math.floor(Math.random() * TILE_COUNT)
-        };
+function randomCell(){
 
-        validPosition = !snake.some(
-            segment => segment.x === food.x && segment.y === food.y
-        );
+    return {
+        x:Math.floor(Math.random()*GRID),
+        y:Math.floor(Math.random()*GRID)
+    };
+}
+
+function occupied(x,y){
+
+    for(const s of snake){
+        if(s.x===x && s.y===y) return true;
+    }
+
+    for(const f of fruits){
+        if(f.x===x && f.y===y) return true;
+    }
+
+    for(const p of poops){
+        if(p.x===x && p.y===y) return true;
+    }
+
+    return false;
+}
+
+function getFreePosition(){
+
+    let pos;
+
+    do{
+        pos = randomCell();
+    }
+    while(occupied(pos.x,pos.y));
+
+    return pos;
+}
+
+/* =========================
+   Frutas
+========================= */
+
+function createFruit(){
+
+    const template =
+    FRUITS[Math.floor(Math.random()*FRUITS.length)];
+
+    const pos = getFreePosition();
+
+    const fruit = {
+        ...template,
+        x:pos.x,
+        y:pos.y
+    };
+
+    if(fruit.type === "orange"){
+        fruit.expires = Date.now() + 6000;
+    }
+
+    fruits.push(fruit);
+}
+
+function ensureTwoFruits(){
+
+    while(fruits.length < 2){
+        createFruit();
     }
 }
 
-/**
- * Atualiza a lógica principal do jogo
- */
-function updateGame() {
+function updateFruitTimers(){
+
+    const now = Date.now();
+
+    fruits = fruits.filter(fruit => {
+
+        if(
+            fruit.type === "orange" &&
+            now > fruit.expires
+        ){
+            return false;
+        }
+
+        return true;
+    });
+
+    ensureTwoFruits();
+}
+
+/* =========================
+   Cocô
+========================= */
+
+function createPoop(){
+
+    const pos = getFreePosition();
+
+    poops.push({
+        x:pos.x,
+        y:pos.y,
+        expires:Date.now()+10000
+    });
+}
+
+function updatePoops(){
+
+    const now = Date.now();
+
+    poops = poops.filter(
+        poop => now < poop.expires
+    );
+}
+
+/* =========================
+   Pontuação
+========================= */
+
+function addScore(points){
+
+    score += points;
+
+    scoreEl.textContent = score;
+
+    const multiplier =
+    (1 + score * 0.05);
+
+    speedEl.textContent =
+    multiplier.toFixed(2) + "x";
+
+    currentSpeed =
+    BASE_SPEED / multiplier;
+}
+
+/* =========================
+   Game Over
+========================= */
+
+function endGame(message){
+
+    gameRunning = false;
+
+    finalScoreEl.textContent = score;
+    gameOverMessageEl.textContent = message;
+
+    gameOverEl.classList.add("show");
+}
+
+/* =========================
+   Física
+========================= */
+
+function update(){
+
+    if(!gameRunning || paused) return;
+
+    updateFruitTimers();
+    updatePoops();
+
     direction = nextDirection;
 
     const head = {
-        x: snake[0].x + direction.x,
-        y: snake[0].y + direction.y
+        x:snake[0].x + direction.x,
+        y:snake[0].y + direction.y
     };
 
-    // Colisão com parede
-    if (
+    // Parede
+    if(
         head.x < 0 ||
         head.y < 0 ||
-        head.x >= TILE_COUNT ||
-        head.y >= TILE_COUNT
-    ) {
-        endGame();
+        head.x >= GRID ||
+        head.y >= GRID
+    ){
+        endGame("Você bateu na parede.");
         return;
     }
 
-    // Colisão com o próprio corpo
-    for (let segment of snake) {
-        if (segment.x === head.x && segment.y === head.y) {
-            endGame();
+    // Corpo
+    for(const part of snake){
+
+        if(
+            head.x === part.x &&
+            head.y === part.y
+        ){
+            endGame("Você colidiu com o próprio corpo.");
+            return;
+        }
+    }
+
+    // Cocô
+    for(const poop of poops){
+
+        if(
+            head.x === poop.x &&
+            head.y === poop.y
+        ){
+            endGame(
+                "Cocô não é comida, você perdeu!"
+            );
             return;
         }
     }
 
     snake.unshift(head);
 
-    // Comeu alimento
-    if (head.x === food.x && head.y === food.y) {
-        score++;
-        scoreElement.textContent = score;
+    let ate = false;
 
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem("snakeHighScore", highScore);
-            highScoreElement.textContent = highScore;
+    for(let i=0;i<fruits.length;i++){
+
+        const fruit = fruits[i];
+
+        if(
+            head.x === fruit.x &&
+            head.y === fruit.y
+        ){
+
+            ate = true;
+
+            if(
+                fruit.type==="banana" ||
+                fruit.type==="apple"
+            ){
+                addScore(1);
+                growQueue += 1;
+            }
+
+            if(fruit.type==="orange"){
+                addScore(2);
+                growQueue += 2;
+            }
+
+            if(fruit.type==="pineapple"){
+                addScore(1);
+                growQueue += 1;
+                createPoop();
+            }
+
+            fruits.splice(i,1);
+
+            ensureTwoFruits();
+
+            break;
         }
-
-        createFood();
-    } else {
-        snake.pop();
     }
 
-    drawGame();
+    if(growQueue > 0){
+
+        growQueue--;
+
+    }else{
+
+        snake.pop();
+    }
 }
 
-/**
- * Desenha todos os elementos do jogo
- */
-function drawGame() {
-    // Fundo
-    ctx.fillStyle = "#111827";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+/* =========================
+   Renderização
+========================= */
 
-    // Grade visual
-    drawGrid();
+function drawGrid(){
 
-    // Alimento
-    ctx.fillStyle = "#ef4444";
-    ctx.beginPath();
-    ctx.arc(
-        food.x * GRID_SIZE + GRID_SIZE / 2,
-        food.y * GRID_SIZE + GRID_SIZE / 2,
-        GRID_SIZE / 2.4,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
+    ctx.strokeStyle =
+    "rgba(255,255,255,.03)";
 
-    // Cobra
-    snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? "#22c55e" : "#16a34a";
+    for(let i=0;i<=GRID;i++){
 
-        ctx.fillRect(
-            segment.x * GRID_SIZE + 1,
-            segment.y * GRID_SIZE + 1,
-            GRID_SIZE - 2,
-            GRID_SIZE - 2
+        ctx.beginPath();
+        ctx.moveTo(i*SIZE,0);
+        ctx.lineTo(i*SIZE,canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0,i*SIZE);
+        ctx.lineTo(canvas.width,i*SIZE);
+        ctx.stroke();
+    }
+}
+
+function drawSnake(){
+
+    snake.forEach((segment,index)=>{
+
+        const x = segment.x * SIZE + 2;
+        const y = segment.y * SIZE + 2;
+
+        const size = SIZE - 4;
+
+        const gradient =
+        ctx.createLinearGradient(
+            x,y,x+size,y+size
+        );
+
+        gradient.addColorStop(
+            0,
+            index===0 ? "#86efac" : "#4ade80"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#22c55e"
+        );
+
+        ctx.fillStyle = gradient;
+
+        roundRect(
+            x,
+            y,
+            size,
+            size,
+            size/2
+        );
+
+        ctx.fill();
+    });
+}
+
+function drawFruits(){
+
+    ctx.font =
+    `${SIZE-4}px serif`;
+
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+
+    fruits.forEach(fruit=>{
+
+        ctx.save();
+
+        ctx.translate(
+            fruit.x*SIZE + SIZE/2,
+            fruit.y*SIZE + SIZE/2
+        );
+
+        ctx.scale(
+            1 + Math.sin(Date.now()/250)*0.05,
+            1 + Math.sin(Date.now()/250)*0.05
+        );
+
+        ctx.fillText(
+            fruit.emoji,
+            0,
+            0
+        );
+
+        ctx.restore();
+    });
+}
+
+function drawPoops(){
+
+    ctx.font =
+    `${SIZE-4}px serif`;
+
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+
+    poops.forEach(p=>{
+
+        ctx.fillText(
+            "💩",
+            p.x*SIZE + SIZE/2,
+            p.y*SIZE + SIZE/2
         );
     });
 }
 
-/**
- * Desenha linhas da grade
- */
-function drawGrid() {
-    ctx.strokeStyle = "rgba(255,255,255,0.05)";
-    ctx.lineWidth = 1;
+function render(){
 
-    for (let i = 0; i <= TILE_COUNT; i++) {
-        const pos = i * GRID_SIZE;
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-        ctx.beginPath();
-        ctx.moveTo(pos, 0);
-        ctx.lineTo(pos, canvas.height);
-        ctx.stroke();
+    drawGrid();
+    drawPoops();
+    drawFruits();
+    drawSnake();
+}
 
-        ctx.beginPath();
-        ctx.moveTo(0, pos);
-        ctx.lineTo(canvas.width, pos);
-        ctx.stroke();
+function roundRect(x,y,w,h,r){
+
+    ctx.beginPath();
+
+    ctx.moveTo(x+r,y);
+
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+
+    ctx.closePath();
+}
+
+/* =========================
+   Loop principal
+========================= */
+
+function loop(timestamp){
+
+    if(timestamp - lastTick > currentSpeed){
+
+        update();
+        lastTick = timestamp;
     }
+
+    render();
+
+    animationFrame =
+    requestAnimationFrame(loop);
 }
 
-/**
- * Finaliza o jogo
- */
-function endGame() {
-    clearInterval(gameLoop);
+/* =========================
+   Pausa
+========================= */
 
-    finalScoreElement.textContent = score;
-    gameOverScreen.classList.add("show");
+function togglePause(){
+
+    if(!gameRunning) return;
+
+    paused = !paused;
+
+    pauseIndicator.classList.toggle(
+        "show",
+        paused
+    );
+
+    pauseBtn.textContent =
+    paused
+    ? "CONTINUAR"
+    : "PAUSAR";
 }
 
-/**
- * Controle por teclado
- */
-document.addEventListener("keydown", (event) => {
-    switch (event.key) {
-        case "ArrowUp":
-            if (direction.y !== 1) {
-                nextDirection = { x: 0, y: -1 };
-            }
-            break;
+/* =========================
+   Controles
+========================= */
 
-        case "ArrowDown":
-            if (direction.y !== -1) {
-                nextDirection = { x: 0, y: 1 };
-            }
-            break;
+document.addEventListener(
+"keydown",
+e=>{
 
-        case "ArrowLeft":
-            if (direction.x !== 1) {
-                nextDirection = { x: -1, y: 0 };
-            }
-            break;
+    const k =
+    e.key.toLowerCase();
 
-        case "ArrowRight":
-            if (direction.x !== -1) {
-                nextDirection = { x: 1, y: 0 };
-            }
-            break;
+    if(
+        !gameRunning &&
+        e.key==="Enter"
+    ){
+        startGame();
+        return;
+    }
+
+    if(e.code==="Space"){
+        e.preventDefault();
+        togglePause();
+        return;
+    }
+
+    if(paused) return;
+
+    if(
+        k==="arrowup" || k==="w"
+    ){
+        if(direction.y!==1)
+        nextDirection={x:0,y:-1};
+    }
+
+    if(
+        k==="arrowdown" || k==="s"
+    ){
+        if(direction.y!==-1)
+        nextDirection={x:0,y:1};
+    }
+
+    if(
+        k==="arrowleft" || k==="a"
+    ){
+        if(direction.x!==1)
+        nextDirection={x:-1,y:0};
+    }
+
+    if(
+        k==="arrowright" || k==="d"
+    ){
+        if(direction.x!==-1)
+        nextDirection={x:1,y:0};
     }
 });
 
-/**
- * Botão de reinício
- */
-restartBtn.addEventListener("click", initGame);
+pauseBtn.addEventListener(
+"click",
+togglePause
+);
 
-// Inicialização
-initGame();
-drawGame();
+restartBtn.addEventListener(
+"click",
+startGame
+);
+
+/* =========================
+   Início
+========================= */
+
+startGame();
+
 </script>
 
 </body>
